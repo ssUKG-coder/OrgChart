@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Company Organizational Chart</title>
+  <style>
+    .org-chart {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .node {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      position: relative;
+    }
+
+    .node h3 {
+      margin-top: 0;
+    }
+
+    .line {
+      position: absolute;
+      width: 2px;
+      background-color: #ccc;
+    }
+
+    .vertical-line {
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .horizontal-line {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="org-chart">
+    <div id="chart-container"></div>
+  </div>
+
+  <script>
+    const data = {
+      name: 'CEO',
+      children: [
+        {
+          name: 'CFO',
+          children: [
+            { name: 'Finance Manager' },
+            { name: 'Accountant' }
+          ]
+        },
+        {
+          name: 'CTO',
+          children: [
+            { name: 'IT Manager' },
+            { name: 'Software Developer' },
+            { name: 'System Administrator' }
+          ]
+        },
+        {
+          name: 'COO',
+          children: [
+            { name: 'Operations Manager' },
+            { name: 'HR Manager' },
+            { name: 'Logistics Manager' }
+          ]
+        }
+      ]
+    };
+
+    const chartContainer = document.getElementById('chart-container');
+
+    function createNode(nodeData) {
+      const nodeDiv = document.createElement('div');
+      nodeDiv.classList.add('node');
+      nodeDiv.innerHTML = `<h3>${nodeData.name}</h3>`;
+      return nodeDiv;
+    }
+
+    function createLine(x1, y1, x2, y2, orientation) {
+      const lineDiv = document.createElement('div');
+      lineDiv.classList.add('line');
+      if (orientation === 'vertical') {
+        lineDiv.classList.add('vertical-line');
+        lineDiv.style.top = `${y1}px`;
+        lineDiv.style.left = `${x1}px`;
+        lineDiv.style.height = `${y2 - y1}px`;
+      } else {
+        lineDiv.classList.add('horizontal-line');
+        lineDiv.style.top = `${y1}px`;
+        lineDiv.style.left = `${x1}px`;
+        lineDiv.style.width = `${x2 - x1}px`;
+      }
+      return lineDiv;
+    }
+
+    function renderChart(data, parentNode = null) {
+      const node = createNode(data);
+      if (parentNode) {
+        parentNode.appendChild(node);
+      } else {
+        chartContainer.appendChild(node);
+      }
+
+      if (data.children) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.style.display = 'flex';
+        childrenContainer.style.justifyContent = 'space-around';
+        node.appendChild(childrenContainer);
+
+        let prevNode = null;
+        data.children.forEach(child => {
+          const childNode = renderChart(child, childrenContainer);
+          if (prevNode) {
+            const line = createLine(
+              prevNode.offsetLeft + prevNode.offsetWidth / 2,
+              prevNode.offsetTop + prevNode.offsetHeight,
+              childNode.offsetLeft + childNode.offsetWidth / 2,
+              childNode.offsetTop,
+              'horizontal'
+            );
+            chartContainer.appendChild(line);
+          }
+          prevNode = childNode;
+        });
+
+        const firstChild = childrenContainer.firstChild;
+        const lastChild = childrenContainer.lastChild;
+        const parentCenterX = node.offsetLeft + node.offsetWidth / 2;
+        const childrenCenterY = firstChild.offsetTop + firstChild.offsetHeight / 2;
+
+        const verticalLine = createLine(
+          parentCenterX,
+          node.offsetTop + node.offsetHeight,
+          parentCenterX,
+          childrenCenterY,
+          'vertical'
+        );
+        chartContainer.appendChild(verticalLine);
+      }
+
+      return node;
+    }
+
+    renderChart(data);
+  </script>
+</body>
+</html>
