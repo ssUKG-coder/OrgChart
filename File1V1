@@ -1,60 +1,83 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
-<title>Interactive Org Chart</title>
-<style>
-  .org-chart {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .level {
-    display: flex;
-    margin-bottom: 20px;
-  }
-
-  .node {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 0 10px;
-    text-align: center;
-    cursor: pointer;
-  }
-</style>
+  <title>Interactive Organizational Chart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://gojs.net/latest/release/go.js"></script>
+  <style>
+    #myDiagramDiv {
+      width: 100%;
+      height: 500px;
+    }
+  </style>
 </head>
 <body>
-  <div class="org-chart" id="orgChart">
-    <div class="level">
-      <div class="node" data-id="ceo">CEO</div>
-    </div>
-  </div>
 
-  <script>
-    const orgChart = document.getElementById('orgChart');
+<div id="myDiagramDiv"></div>
 
-    function addLevel(parentId) {
-      const parentNode = document.querySelector(`.node[data-id="${parentId}"]`);
-      if (!parentNode) return;
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const $ = go.GraphObject.make;
 
-      const newLevel = document.createElement('div');
-      newLevel.classList.add('level');
-
-      // Simulate adding 3 children for demonstration
-      for (let i = 0; i < 3; i++) {
-        const newNode = document.createElement('div');
-        newNode.classList.add('node');
-        newNode.textContent = `Child ${i + 1}`;
-        newNode.dataset.id = `${parentId}-child-${i + 1}`; // Assign a unique ID
-        newNode.addEventListener('click', () => addLevel(newNode.dataset.id)); // Make it interactive
-        newLevel.appendChild(newNode);
+    const myDiagram = $(go.Diagram, "myDiagramDiv",
+      {
+        layout: $(go.TreeLayout, { angle: 90, layerSpacing: 35 }),
+        "undoManager.isEnabled": true
       }
+    );
 
-      parentNode.parentNode.insertAdjacentElement('afterend', newLevel); 
-    }
+    // define a Node template
+    myDiagram.nodeTemplate =
+      $(go.Node, "Auto",
+        { selectionAdorned: false },  
+        $(go.Shape, "RoundedRectangle",
+          { fill: "lightblue", stroke: null },
+          new go.Binding("fill", "color")),
+        $(go.Panel, "Table",
+          { defaultAlignment: go.Spot.Left },
+          $(go.RowColumnDefinition, { column: 0, width: 4 }),
+          $(go.TextBlock,
+            { row: 0, column: 1, margin: new go.Margin(6, 10, 4, 10), font: "bold 12px sans-serif" },
+            new go.Binding("text", "title")),
+        )
+      );
 
-    // Initial event listener on the CEO node
-    document.querySelector('.node[data-id="ceo"]').addEventListener('click', () => addLevel('ceo'));
-  </script>
+    // define a Link template
+    myDiagram.linkTemplate =
+      $(go.Link,
+        { routing: go.Link.Orthogonal, corner: 5 },
+        $(go.Shape, { strokeWidth: 3, stroke: "#555" }));
+
+    // Create the model data that will be represented by Nodes and Links
+    const nodeDataArray = [
+      { key: "1", title: "CEO", color: "orange" },
+      { key: "2", parent: "1", title: "CFO", color: "lightgreen" },
+      { key: "3", parent: "1", title: "CTO", color: "lightgreen" },
+      { key: "4", parent: "1", title: "COO", color: "lightgreen" },
+      { key: "5", parent: "2", title: "Finance Manager", color: "lightblue" },
+      { key: "6", parent: "2", title: "Accountant", color: "lightblue" },
+      { key: "7", parent: "3", title: "IT Manager", color: "lightblue" },
+      { key: "8", parent: "3", title: "Software Developer", color: "lightblue" },
+      { key: "9", parent: "3", title: "System Administrator", color: "lightblue" },
+      { key: "10", parent: "4", title: "Operations Manager", color: "lightblue" },
+      { key: "11", parent: "4", title: "HR Manager", color: "lightblue" },
+      { key: "12", parent: "4", title: "Logistics Manager", color: "lightblue" },
+      { key: "13", parent: "12", title: "New Node 1", color: "lightcoral" },
+      { key: "14", parent: "12", title: "New Node 2", color: "lightcoral" },
+      { key: "15", parent: "12", title: "New Node 3", color: "lightcoral" },
+      { key: "16", parent: "12", title: "New Node 4", color: "lightcoral" },
+      { key: "17", parent: "12", title: "New Node 5", color: "lightcoral" },
+      { key: "18", parent: "12", title: "New Node 6", color: "lightcoral" },
+      { key: "19", parent: "12", title: "New Node 7", color: "lightcoral" },
+      { key: "20", parent: "12", title: "New Node 8", color: "lightcoral" },
+      { key: "21", parent: "12", title: "New Node 9", color: "lightcoral" },
+      { key: "22", parent: "12", title: "New Node 10", color: "lightcoral" },
+
+    ];
+    myDiagram.model = new go.TreeModel(nodeDataArray);
+  });
+</script>
 </body>
 </html>
